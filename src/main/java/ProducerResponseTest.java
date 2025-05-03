@@ -4,8 +4,9 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
-public class JMSProducer {
+public class ProducerResponseTest {
     public static void main(String[] args) {
         try {
             // Connect to ActiveMQ server
@@ -26,10 +27,15 @@ public class JMSProducer {
             //Produce Times
             List<Long> produceTimes = new ArrayList<>();
 
+            // Prepare message
+            byte[] bytes = new byte[1024];
+            new Random().nextBytes(bytes);
+
             // Send 1000 messages
             for (int i = 0; i < 1000; i++) {
                 String text = "Message #" + i;
-                TextMessage message = session.createTextMessage(text);
+                BytesMessage message = session.createBytesMessage();
+                message.writeBytes(bytes);
 
                 long start = System.nanoTime();
                 producer.send(message);
@@ -37,11 +43,13 @@ public class JMSProducer {
                 produceTimes.add(responseTime);
                 System.out.println("Sent message: " + text + " | Response time: " + responseTime + " ns");
             }
+
             Collections.sort(produceTimes);
             long medianProduce = produceTimes.get(produceTimes.size()/2);
             System.out.println("Median Produce Response Time: "+medianProduce+" ns");
             session.close();
             connection.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

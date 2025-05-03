@@ -16,7 +16,7 @@
             <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-all</artifactId>
-            <version>6.1.6</version> <!-- Or whatever version you downloaded -->
+            <version>6.1.6</version>
     </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

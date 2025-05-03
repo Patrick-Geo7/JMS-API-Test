@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class JMSConsumer {
+public class ConsumerResponseTest {
     public static void main(String[] args) {
         try {
             // Connect to ActiveMQ server
@@ -34,6 +34,7 @@ public class JMSConsumer {
                     System.out.println("Received: " + textMessage.getText() + " | Response time: " + responseTime + " ns");
                 }
             }
+
             Collections.sort(consumeTimes);
             long medianConsume = consumeTimes.get(consumeTimes.size() / 2);
             System.out.println("Median Consume Time: "+medianConsume+" ns");
