@@ -6,44 +6,31 @@ import java.util.Collections;
 import java.util.List;
 
 public class JMSProducer {
-    public static void main(String[] args) {
-        try {
-            // Connect to ActiveMQ server
-            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-            Connection connection = connectionFactory.createConnection();
-            connection.start();
+    public void sendMessages(int throughput) throws Exception {
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
 
-            // Create session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Destination destination = session.createQueue("TEST.QUEUE");
+        MessageProducer producer = session.createProducer(destination);
 
-            // Create queue
-            Destination destination = session.createQueue("TEST.QUEUE");
+        long interval = 1_000_000_000L / throughput;
+        long sleepTime = (long) (interval - 0.2 * interval) / 1_000_000;
+        long start = System.nanoTime();
 
-            // Create producer
-            MessageProducer producer = session.createProducer(destination);
-            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        for (int i = 0; i < throughput; i++) {
+            TextMessage message = session.createTextMessage("Throughput Test Message " + i);
+            producer.send(message);
+            Thread.sleep(sleepTime);
 
-            //Produce Times
-            List<Long> produceTimes = new ArrayList<>();
-
-            // Send 1000 messages
-            for (int i = 0; i < 1000; i++) {
-                String text = "Message #" + i;
-                TextMessage message = session.createTextMessage(text);
-
-                long start = System.nanoTime();
-                producer.send(message);
-                long responseTime = System.nanoTime() - start;
-                produceTimes.add(responseTime);
-                System.out.println("Sent message: " + text + " | Response time: " + responseTime + " ns");
+            while (System.nanoTime() - start < (i + 1) * interval) {
+                // wait
             }
-            Collections.sort(produceTimes);
-            long medianProduce = produceTimes.get(produceTimes.size()/2);
-            System.out.println("Median Produce Response Time: "+medianProduce+" ns");
-            session.close();
-            connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        session.close();
+        connection.close();
     }
 }
+
